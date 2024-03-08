@@ -1,0 +1,68 @@
+package http
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
+	"net"
+	"net/http"
+)
+
+func NewHttp(log *logrus.Logger, address string, registry *prometheus.Registry) (*Http, error) {
+	ln, err := net.Listen("tcp", address)
+	if err != nil {
+		return nil, err
+	}
+	handler := http.NewServeMux()
+	s := http.Server{
+		Handler: handler,
+	}
+	h := Http{
+		log: log,
+		ln:  ln,
+		s:   s,
+	}
+	RegisterMetricEndpoint(handler, registry)
+	return &h, nil
+}
+
+type Http struct {
+	log *logrus.Logger
+	ln  net.Listener
+	s   http.Server
+}
+
+func (h *Http) Run(ctx context.Context) error {
+	h.log.Infof("start http endpoint: %s", h.ln.Addr())
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		err := h.s.Serve(h.ln)
+		if !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("unable to serve http enpoint: %w", err)
+		}
+		return nil
+	})
+	<-ctx.Done()
+	h.log.Debugf("http endpoint exiting...")
+	err := h.s.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
+	err = g.Wait()
+	if err != nil {
+		return err
+	}
+	h.log.Infof("http endpoint exit OK")
+	return nil
+}
+
+func RegisterMetricEndpoint(mux *http.ServeMux, registry *prometheus.Registry) {
+	registry.MustRegister(collectors.NewGoCollector())
+	registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	mux.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{Registry: registry}))
+}

@@ -1,0 +1,14 @@
+quotas:
+  - serviceCode: "ec2"
+    quotaCode: "L-0263D0A3"
+metrics:
+  - name: "route53_hosted_zone_records"
+    help: "Number of resource sets in hosted zone"
+    command: "aws route53 list-hosted-zones"
+    list: ".HostedZones"
+    value: ".ResourceRecordSetCount"
+    labels:
+      - name: "id"
+        jqValue: ".Id"
+      - name: "name"
+        jqValue: ".Name"
