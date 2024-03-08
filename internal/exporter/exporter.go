@@ -11,7 +11,7 @@ import (
 
 type Collector interface {
 	Register(r *prometheus.Registry) error
-	Collect(g *errgroup.Group, ctx context.Context)
+	Collect(ctx context.Context, g *errgroup.Group)
 }
 
 const (
@@ -51,10 +51,11 @@ func (e *Exporter) Run(ctx context.Context) error {
 	ticker := time.NewTicker(e.cfg.interval)
 	e.log.Debugf("scrape metrics every: %v", e.cfg.interval)
 	defer ticker.Stop()
+end:
 	for {
 		select {
 		case <-ctx.Done():
-			break
+			break end
 		case <-ticker.C:
 			err := e.scrape(ctx)
 			if err != nil {
@@ -71,7 +72,7 @@ func (e *Exporter) scrape(ctx context.Context) error {
 	defer cancel()
 	g, ctx := errgroup.WithContext(ctx)
 	for _, c := range e.cls {
-		c.Collect(g, ctx)
+		c.Collect(ctx, g)
 	}
 	err := g.Wait()
 	return err

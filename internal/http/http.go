@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-func NewHttp(log *logrus.Logger, address string, registry *prometheus.Registry) (*Http, error) {
+func NewHTTP(log *logrus.Logger, address string, registry *prometheus.Registry) (*HTTP, error) {
 	ln, err := net.Listen("tcp", address)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func NewHttp(log *logrus.Logger, address string, registry *prometheus.Registry) 
 	s := http.Server{
 		Handler: handler,
 	}
-	h := Http{
+	h := HTTP{
 		log: log,
 		ln:  ln,
 		s:   &s,
@@ -31,13 +31,13 @@ func NewHttp(log *logrus.Logger, address string, registry *prometheus.Registry) 
 	return &h, nil
 }
 
-type Http struct {
+type HTTP struct {
 	log *logrus.Logger
 	ln  net.Listener
 	s   *http.Server
 }
 
-func (h *Http) Run(ctx context.Context) error {
+func (h *HTTP) Run(ctx context.Context) error {
 	h.log.Infof("start http endpoint: %s", h.ln.Addr())
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {

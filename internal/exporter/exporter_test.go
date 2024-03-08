@@ -68,11 +68,11 @@ type testCollector struct {
 	err error
 }
 
-func (t *testCollector) Register(r *prometheus.Registry) error {
+func (t *testCollector) Register(_ *prometheus.Registry) error {
 	return nil
 }
 
-func (t *testCollector) Collect(g *errgroup.Group, ctx context.Context) {
+func (t *testCollector) Collect(_ context.Context, g *errgroup.Group) {
 	g.Go(func() error {
 		return t.err
 	})

@@ -41,7 +41,7 @@ func (c *Collector) Register(r *prometheus.Registry) error {
 	return nil
 }
 
-func (c *Collector) Collect(g *errgroup.Group, ctx context.Context) {
+func (c *Collector) Collect(ctx context.Context, g *errgroup.Group) {
 	for _, t := range c.tasks {
 		g.Go(t.run(ctx))
 	}

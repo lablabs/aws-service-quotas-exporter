@@ -11,21 +11,24 @@ import (
 	"testing"
 )
 
+const (
+	address = "0.0.0.0:8080"
+)
+
 func TestNewHttp(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	address, close := StartHttp(t, ctx)
+	closeHTTP := StartHTTP(ctx, t)
 	defer func() {
 		cancel()
-		close()
+		closeHTTP()
 	}()
 	resp, err := http.Get("http://" + address + "/metrics")
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
-func StartHttp(t *testing.T, ctx context.Context) (string, func()) {
-	address := "0.0.0.0:8080"
-	http, err := httpApi.NewHttp(test.DefaultLogger(), address, prometheus.NewRegistry())
+func StartHTTP(ctx context.Context, t *testing.T) func() {
+	http, err := httpApi.NewHTTP(test.DefaultLogger(), address, prometheus.NewRegistry())
 	assert.NoError(t, err)
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -34,7 +37,7 @@ func StartHttp(t *testing.T, ctx context.Context) (string, func()) {
 		err := http.Run(ctx)
 		assert.NoError(t, err)
 	}()
-	return address, func() {
+	return func() {
 		wg.Wait()
 	}
 }

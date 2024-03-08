@@ -3,7 +3,7 @@ linters:
     - megacheck
     - gofmt
     - govet
-    - revive # replacement for golint
+    - revive
 
 linters-settings:
   staticcheck:

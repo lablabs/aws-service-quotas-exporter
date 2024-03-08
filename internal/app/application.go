@@ -60,7 +60,7 @@ func NewApplication(log *logrus.Logger, cfg Config) (*Application, error) {
 	}
 	mng.Add(exp)
 
-	http, err := http.NewHttp(log, cfg.Address, registry)
+	http, err := http.NewHTTP(log, cfg.Address, registry)
 	if err != nil {
 		return nil, err
 	}

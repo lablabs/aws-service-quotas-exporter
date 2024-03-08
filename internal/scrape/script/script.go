@@ -33,7 +33,7 @@ func Run(ctx context.Context, cfg Config) ([]Data, error) {
 	if err != nil {
 		return nil, fmt.Errorf("script error: %w, std err: %s", err, stderr.String())
 	}
-	data, err := ParseJson(stdout.Bytes())
+	data, err := ParseJSON(stdout.Bytes())
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse response from command: %v", cfg.Command)
 	}
@@ -80,7 +80,7 @@ func ParseRecord(r any, c Config) (Data, error) {
 	}, nil
 }
 
-func ParseJson(data []byte) (map[string]interface{}, error) {
+func ParseJSON(data []byte) (map[string]interface{}, error) {
 	var out map[string]interface{}
 	err := json.Unmarshal(data, &out)
 	if err != nil {

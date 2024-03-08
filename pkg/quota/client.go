@@ -42,7 +42,7 @@ func (c *Client) GetQuota(ctx context.Context, serviceCode string, quotaCode str
 
 func (c *Client) GetQuotas(ctx context.Context, serviceCode string, options ...Option) ([]types.ServiceQuota, error) {
 	qs := make([]types.ServiceQuota, 0)
-	var token *string = nil
+	var token *string
 	for {
 		res, err := c.squ.ListServiceQuotas(ctx, &servicequotas.ListServiceQuotasInput{
 			ServiceCode: aws.String(serviceCode),
