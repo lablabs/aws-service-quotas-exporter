@@ -25,7 +25,7 @@ func NewHttp(log *logrus.Logger, address string, registry *prometheus.Registry) 
 	h := Http{
 		log: log,
 		ln:  ln,
-		s:   s,
+		s:   &s,
 	}
 	RegisterMetricEndpoint(handler, registry)
 	return &h, nil
@@ -34,7 +34,7 @@ func NewHttp(log *logrus.Logger, address string, registry *prometheus.Registry) 
 type Http struct {
 	log *logrus.Logger
 	ln  net.Listener
-	s   http.Server
+	s   *http.Server
 }
 
 func (h *Http) Run(ctx context.Context) error {

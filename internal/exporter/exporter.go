@@ -54,7 +54,7 @@ func (e *Exporter) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			break
 		case <-ticker.C:
 			err := e.scrape(ctx)
 			if err != nil {

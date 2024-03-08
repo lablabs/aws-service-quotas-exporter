@@ -49,14 +49,18 @@ func (c *Collector) Register(r *prometheus.Registry) error {
 
 func (c *Collector) Collect(g *errgroup.Group, ctx context.Context) {
 	for _, q := range c.cfg {
-		g.Go(func() error {
-			res, err := c.qcl.GetQuota(ctx, q.ServiceCode, q.QuotaCode, quota.WithRegion(q.Region))
-			if err != nil {
-				return err
-			}
-			setMetric(c.gvq, res)
-			return nil
-		})
+		g.Go(c.run(ctx, q))
+	}
+}
+
+func (c *Collector) run(ctx context.Context, q Config) func() error {
+	return func() error {
+		res, err := c.qcl.GetQuota(ctx, q.ServiceCode, q.QuotaCode, quota.WithRegion(q.Region))
+		if err != nil {
+			return err
+		}
+		setMetric(c.gvq, res)
+		return nil
 	}
 }
 

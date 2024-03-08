@@ -38,14 +38,20 @@ func NewApplication(log *logrus.Logger, cfg Config) (*Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	qcl.Register(registry)
+	err = qcl.Register(registry)
+	if err != nil {
+		return nil, err
+	}
 	cls = append(cls, qcl)
 
 	scl, err := script.NewCollector(log, scCfg.Metrics, PrometheusNamespace)
 	if err != nil {
 		return nil, err
 	}
-	scl.Register(registry)
+	err = scl.Register(registry)
+	if err != nil {
+		return nil, err
+	}
 	cls = append(cls, scl)
 
 	exp, err := exporter.NewExporter(log, cls, exporterOptions(scCfg)...)

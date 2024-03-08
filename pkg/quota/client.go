@@ -51,11 +51,9 @@ func (c *Client) GetQuotas(ctx context.Context, serviceCode string, options ...O
 		if err != nil {
 			return nil, err
 		}
-		for _, q := range res.Quotas {
-			qs = append(qs, q)
-		}
+		qs = append(qs, res.Quotas...)
 		if res.NextToken == nil {
-			return qs, nil
+			break
 		}
 		token = res.NextToken
 	}

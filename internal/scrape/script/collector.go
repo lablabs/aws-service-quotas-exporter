@@ -43,20 +43,24 @@ func (c *Collector) Register(r *prometheus.Registry) error {
 
 func (c *Collector) Collect(g *errgroup.Group, ctx context.Context) {
 	for _, t := range c.tasks {
-		g.Go(func() error {
-			data, err := Run(ctx, t.cfg)
-			if err != nil {
-				return err
-			}
-			for _, d := range data {
-				t.m.With(d.Labels).Set(d.Value)
-			}
-			return nil
-		})
+		g.Go(t.run(ctx))
 	}
 }
 
 type task struct {
 	m   *prometheus.GaugeVec
 	cfg Config
+}
+
+func (t task) run(ctx context.Context) func() error {
+	return func() error {
+		data, err := Run(ctx, t.cfg)
+		if err != nil {
+			return err
+		}
+		for _, d := range data {
+			t.m.With(d.Labels).Set(d.Value)
+		}
+		return nil
+	}
 }
