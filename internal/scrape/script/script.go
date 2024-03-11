@@ -68,11 +68,17 @@ func ParseRecord(r any, c Config) (Data, error) {
 	}
 	labels := make(map[string]string)
 	for _, l := range c.Labels {
-		lv, err := GetString(r, l.JqValue)
-		if err != nil {
-			return Data{}, err
+		if l.JqValue != "" {
+			lv, err := GetString(r, l.JqValue)
+			if err != nil {
+				return Data{}, err
+			}
+			labels[l.Name] = lv
+			continue
 		}
-		labels[l.Name] = lv
+		if l.Value != "" {
+			labels[l.Name] = l.Value
+		}
 	}
 	return Data{
 		Value:  v,

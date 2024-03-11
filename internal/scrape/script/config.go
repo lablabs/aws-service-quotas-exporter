@@ -39,8 +39,8 @@ func (c *Config) Validate() error {
 		if l.Name == "" {
 			return fmt.Errorf("attribute name for label is required")
 		}
-		if l.JqValue == "" {
-			return fmt.Errorf("jqValue for label is required")
+		if l.GetValue() == "" {
+			return fmt.Errorf("jqValue or value for label is required")
 		}
 	}
 	return nil
@@ -57,4 +57,15 @@ func (c *Config) FormatEnvs() []string {
 type Label struct {
 	Name    string `json:"name,omitempty" yaml:"name,omitempty"`
 	JqValue string `json:"jqValue,omitempty" yaml:"jqValue,omitempty"`
+	Value   string `json:"value,omitempty" yaml:"value,omitempty"`
+}
+
+func (l Label) GetValue() string {
+	if l.JqValue != "" {
+		return l.JqValue
+	}
+	if l.Value != "" {
+		return l.Value
+	}
+	return ""
 }

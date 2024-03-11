@@ -2,7 +2,7 @@ package app
 
 type Log struct {
 	Level  string `long:"level" description:"Log level" choice:"DEBUG" choice:"INFO" default:"DEBUG"`
-	Format string `long:"format" description:"Format of message logs" choice:"json" default:"json"`
+	Format string `long:"format" description:"Format of message logs" choice:"json" choice:"text" default:"json"`
 }
 
 type Config struct {
