@@ -99,7 +99,7 @@ serviceMonitor:
   # Set the namespace the ServiceMonitor should be deployed, if empty namespace will be .Release.Namespace
   namespace: ""
   # Service monitor labels
-  labels: { }
+  labels: {}
   # Set how frequently Prometheus should scrape
   interval: 30s
   # Set path to redis-exporter telemtery-path
@@ -107,12 +107,10 @@ serviceMonitor:
   # Set timeout for scrape
   timeout: 10s
   # Set relabel_configs as per https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
-  relabelings: [ ]
+  relabelings: []
   # Set of labels to transfer on the Kubernetes Service onto the target.
-  targetLabels: [ ]
-  metricRelabelings: [ ]
-
-
+  targetLabels: []
+  metricRelabelings: []
 
 exporter:
   address: "0.0.0.0:8080"
