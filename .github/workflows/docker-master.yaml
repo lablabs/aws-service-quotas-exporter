@@ -26,8 +26,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-#            lablabs/aws-service-quotas-exporter
             ghcr.io/lablabs/aws-service-quotas-exporter
+#            lablabs/aws-service-quotas-exporter
           # generate Docker tags based on the following events/attributes
           tags: type=raw,value=latest
 
