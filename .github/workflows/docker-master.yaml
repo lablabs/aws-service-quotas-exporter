@@ -1,10 +1,10 @@
 name: Build and Publish Docker Images after push to master branch
-#on:
-#  push:
-#    branches: [master]
 on:
   push:
-  pull_request:
+    branches: [master]
+#on:
+#  push:
+#  pull_request:
 
 jobs:
   build-and-push-docker-image:
