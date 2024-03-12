@@ -7,8 +7,8 @@ permissions:
 
 jobs:
   golangci:
-    name: GO lang CI linter
-    runs-on: ubuntu-latest
+    name: Golang CI linter
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: golangci-lint
