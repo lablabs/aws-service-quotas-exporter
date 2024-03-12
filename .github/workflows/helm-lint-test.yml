@@ -1,7 +1,6 @@
 name: Lint and Test Charts
 
-on:
-  pull_request:
+on: pull_request
 
 env:
   HELM_VERSION: 3.14.0
@@ -47,3 +46,15 @@ jobs:
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
         run: ct install --target-branch ${{ github.event.repository.default_branch }}
+
+  linter-artifacthub:
+    runs-on: ubuntu-22.04
+    container:
+      image: artifacthub/ah
+      options: --user root
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run ah lint
+        working-directory: ./charts/
+        run: ah lint

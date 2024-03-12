@@ -1,9 +1,10 @@
 name: Build and publish latest Docker images
 
 on:
+  workflow_dispatch:
   push:
-    tags:
-      - '*'
+    branches:
+      - main
 
 jobs:
   build-latest-image:
