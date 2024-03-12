@@ -6,5 +6,5 @@ metadata:
   labels:
     {{- include "aws-service-quotas-exporter.labels" . | nindent 4 }}
 data:
-  scrape.yaml:
+  scrape.yaml: |
     {{- .Values.exporter.config | toYaml | nindent 4 }}
