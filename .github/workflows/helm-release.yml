@@ -9,6 +9,9 @@ on:
 #  push:
 #  pull_request:
 
+env:
+  HELM_VERSION: 3.14.0
+
 jobs:
   release:
     # depending on default permission settings for your org (contents being read-only or read-write for workloads), you will have to add permissions
@@ -30,7 +33,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
-          version: v3.12.1
+          version: ${{ env.HELM_VERSION }}
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0

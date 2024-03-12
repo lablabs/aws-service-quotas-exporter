@@ -1,4 +1,4 @@
-name: Generate release-artifacts
+name: Generate release binary artifacts
 on:
   release:
     types:
