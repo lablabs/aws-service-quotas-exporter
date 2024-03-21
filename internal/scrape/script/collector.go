@@ -33,23 +33,24 @@ func (c *Collector) Register(ctx context.Context, r *prometheus.Registry) error 
 		c.log.Debugf("start registering script metrics")
 		g, ctx := errgroup.WithContext(ctx)
 		for _, cf := range c.cfg {
+			config := cf
 			g.Go(func() error {
-				data, err := Run(ctx, cf)
+				data, err := Run(ctx, config)
 				if err != nil {
-					c.log.Errorf("unable to run command: %s, %v", cf.Script, err)
+					c.log.Errorf("unable to run command: %s, %v", config.Script, err)
 					return err
 				}
 				if len(data) > 0 {
 					lbs := data[0].LabelNames()
 					m := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 						Namespace: c.ns,
-						Name:      cf.Name,
-						Help:      cf.Help,
+						Name:      config.Name,
+						Help:      config.Help,
 					}, lbs)
 					r.MustRegister(m)
 					t := task{
 						m:   m,
-						cfg: cf,
+						cfg: config,
 					}
 					c.addTask(t)
 					for _, d := range data {

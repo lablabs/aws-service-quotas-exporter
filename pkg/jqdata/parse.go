@@ -7,20 +7,20 @@ import (
 	"github.com/itchyny/gojq"
 )
 
-type JsonData struct {
+type JSONData struct {
 	d map[string]any
 }
 
-func ParseRawJSON(data []byte) (JsonData, error) {
+func ParseRawJSON(data []byte) (JSONData, error) {
 	d := make(map[string]any)
 	err := json.Unmarshal(data, &d)
 	if err != nil {
-		return JsonData{}, fmt.Errorf("unable parse JSON: %w", err)
+		return JSONData{}, fmt.Errorf("unable parse JSON: %w", err)
 	}
-	return JsonData{d: d}, nil
+	return JSONData{d: d}, nil
 }
 
-func (j JsonData) Query(ctx context.Context, q string) (any, error) {
+func (j JSONData) Query(ctx context.Context, q string) (any, error) {
 	qr, err := gojq.Parse(q)
 	if err != nil {
 		return nil, err

@@ -74,8 +74,9 @@ func (e *Exporter) scrape(ctx context.Context) error {
 	defer cancel()
 	g, ctx := errgroup.WithContext(ctx)
 	for _, c := range e.cls {
+		cl := c
 		g.Go(func() error {
-			return c.Collect(ctx)
+			return cl.Collect(ctx)
 		})
 	}
 	err := g.Wait()
@@ -87,8 +88,9 @@ func (e *Exporter) register(ctx context.Context) error {
 	defer cancel()
 	g, ctx := errgroup.WithContext(ctx)
 	for _, c := range e.cls {
+		cl := c
 		g.Go(func() error {
-			return c.Register(ctx, e.r)
+			return cl.Register(ctx, e.r)
 		})
 	}
 	err := g.Wait()

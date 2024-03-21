@@ -54,14 +54,15 @@ func (c *Collector) Register(ctx context.Context, r *prometheus.Registry) error 
 		r.MustRegister(gvq)
 		g, ctx := errgroup.WithContext(ctx)
 		for _, cf := range c.cfg {
+			qc := cf
 			g.Go(func() error {
-				res, err := c.qcl.GetQuota(ctx, cf.ServiceCode, cf.QuotaCode, quota.WithRegion(cf.Region))
+				res, err := c.qcl.GetQuota(ctx, qc.ServiceCode, qc.QuotaCode, quota.WithRegion(qc.Region))
 				if err != nil {
 					return err
 				}
 				t := task{
 					m:   gvq,
-					cfg: cf,
+					cfg: qc,
 				}
 				c.addTask(t)
 				setMetric(t.m, res)
@@ -76,7 +77,8 @@ func (c *Collector) Register(ctx context.Context, r *prometheus.Registry) error 
 func (c *Collector) Collect(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 	for _, t := range c.tasks {
-		g.Go(t.run(ctx, c.qcl))
+		ts := t
+		g.Go(ts.run(ctx, c.qcl))
 	}
 	err := g.Wait()
 	return err

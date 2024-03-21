@@ -22,14 +22,14 @@ func TestJsonData_Query(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		j       func() JsonData
+		j       func() JSONData
 		args    args
 		want    any
 		wantErr bool
 	}{
 		{
 			name: "Query OK",
-			j: func() JsonData {
+			j: func() JSONData {
 				jd, err := ParseRawJSON(j)
 				assert.NoError(t, err)
 				return jd

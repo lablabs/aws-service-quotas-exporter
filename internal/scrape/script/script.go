@@ -20,7 +20,7 @@ func (d Data) LabelNames() []string {
 		return []string{}
 	}
 	r := make([]string, 0)
-	for k, _ := range d.Labels {
+	for k := range d.Labels {
 		r = append(r, k)
 	}
 	return r
