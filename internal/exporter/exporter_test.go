@@ -8,7 +8,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/sync/errgroup"
 	"testing"
 	"time"
 )
@@ -52,7 +51,7 @@ func TestExporter_Run(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e, err := exporter.NewExporter(tt.fields.log, tt.fields.cls)
+			e, err := exporter.NewExporter(tt.fields.log, tt.fields.cls, prometheus.NewRegistry())
 			assert.NoError(t, err)
 			ctx, cancel := tt.fields.ctx()
 			defer cancel()
@@ -68,12 +67,10 @@ type testCollector struct {
 	err error
 }
 
-func (t *testCollector) Register(_ *prometheus.Registry) error {
-	return nil
+func (t *testCollector) Register(_ context.Context, _ *prometheus.Registry) error {
+	return t.err
 }
 
-func (t *testCollector) Collect(_ context.Context, g *errgroup.Group) {
-	g.Go(func() error {
-		return t.err
-	})
+func (t *testCollector) Collect(_ context.Context) error {
+	return t.err
 }

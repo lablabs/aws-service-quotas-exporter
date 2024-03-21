@@ -1,99 +1,54 @@
-package script
+package script_test
 
 import (
 	"context"
+	"github.com/lablabs/aws-service-quotas-exporter/internal/scrape/script"
 	"reflect"
 	"testing"
-	"time"
 )
 
-func TestScrapper_Run(t *testing.T) {
-	type fields struct {
-		cfg Config
-	}
+func TestRun(t *testing.T) {
 	tests := []struct {
 		name    string
-		fields  fields
-		want    []Data
+		args    script.Config
+		want    []script.Data
 		wantErr bool
 	}{
 		{
-			name: "Scrape items OK",
-			fields: fields{
-				cfg: Config{
-					Command: "echo {\"items\":[{\"v\": 1,\"name\":\"a\"},{\"v\":2,\"name\":\"b\"}]}",
-					List:    ".items",
-					Value:   ".v",
-					Labels: []Label{
-						{
-							Name:    "name",
-							JqValue: ".name",
-						},
-					},
-				},
+			name: "Parsing command OK",
+			args: script.Config{
+				Name:   "metric_1",
+				Help:   "",
+				Script: "echo \"region=eu-central-1,cluster=eks-dev-1,type=dev,2\"",
 			},
-			want: []Data{
-				{
-					Value: 1,
-					Labels: map[string]string{
-						"name": "a",
-					},
-				},
+			want: []script.Data{
 				{
 					Value: 2,
 					Labels: map[string]string{
-						"name": "b",
+						"region":  "eu-central-1",
+						"cluster": "eks-dev-1",
+						"type":    "dev",
 					},
 				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "Scrape one value OK",
-			fields: fields{
-				cfg: Config{
-					Command: "echo {\"v\": 1,\"name\":\"a\"}",
-					Value:   ".v",
-					Labels: []Label{
-						{
-							Name:    "name",
-							JqValue: ".name",
-						},
-					},
-				},
+			name: "Invalid command",
+			args: script.Config{
+				Name:   "metric_1",
+				Help:   "",
+				Script: "invalid command",
 			},
-			want: []Data{
-				{
-					Value: 1,
-					Labels: map[string]string{
-						"name": "a",
-					},
-				},
-			},
-			wantErr: false,
-		},
-		{
-			name: "Scrape cmd Json Error",
-			fields: fields{
-				cfg: Config{
-					Command: "echo not json",
-					Value:   ".v",
-					Labels: []Label{
-						{
-							Name:    "name",
-							JqValue: ".name",
-						},
-					},
-				},
-			},
+			want:    nil,
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-			got, err := Run(ctx, tt.fields.cfg)
-			cancel()
+			ctx, cancelCtx := context.WithCancel(context.Background())
+			defer cancelCtx()
+			got, err := script.Run(ctx, tt.args)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Run() error = %v, wantErr %v", err, tt.wantErr)
 				return

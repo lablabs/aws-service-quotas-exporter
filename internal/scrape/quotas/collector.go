@@ -8,6 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
+	"sync"
 )
 
 const (
@@ -21,45 +22,84 @@ type Quota interface {
 }
 
 func NewCollector(log *logrus.Logger, cfg []Config, ns string, qcl Quota) (*Collector, error) {
-	gvq := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: ns,
-		Name:      "quota",
-		Help:      "AWS service quota",
-	}, []string{name, code, serviceCode})
 	cl := Collector{
-		log: log,
-		qcl: qcl,
-		gvq: gvq,
-		cfg: cfg,
+		log:   log,
+		qcl:   qcl,
+		cfg:   cfg,
+		ns:    ns,
+		tasks: make([]task, 0),
 	}
 	return &cl, nil
 }
 
 type Collector struct {
-	log *logrus.Logger
-	qcl Quota
-	gvq *prometheus.GaugeVec
-	cfg []Config
+	log       *logrus.Logger
+	qcl       Quota
+	once      sync.Once
+	err       error
+	ns        string
+	cfg       []Config
+	tasks     []task
+	tasksLock sync.Mutex
 }
 
-func (c *Collector) Register(r *prometheus.Registry) error {
-	r.MustRegister(c.gvq)
-	return nil
+func (c *Collector) Register(ctx context.Context, r *prometheus.Registry) error {
+	c.once.Do(func() {
+		c.log.Debugf("start registering quota metrics")
+		gvq := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Namespace: c.ns,
+			Name:      "quota",
+			Help:      "AWS service quota",
+		}, []string{name, code, serviceCode})
+		r.MustRegister(gvq)
+		g, ctx := errgroup.WithContext(ctx)
+		for _, cf := range c.cfg {
+			g.Go(func() error {
+				res, err := c.qcl.GetQuota(ctx, cf.ServiceCode, cf.QuotaCode, quota.WithRegion(cf.Region))
+				if err != nil {
+					return err
+				}
+				t := task{
+					m:   gvq,
+					cfg: cf,
+				}
+				c.addTask(t)
+				setMetric(t.m, res)
+				return nil
+			})
+		}
+		c.err = g.Wait()
+	})
+	return c.err
 }
 
-func (c *Collector) Collect(ctx context.Context, g *errgroup.Group) {
-	for _, q := range c.cfg {
-		g.Go(c.run(ctx, q))
+func (c *Collector) Collect(ctx context.Context) error {
+	g, ctx := errgroup.WithContext(ctx)
+	for _, t := range c.tasks {
+		g.Go(t.run(ctx, c.qcl))
 	}
+	err := g.Wait()
+	return err
 }
 
-func (c *Collector) run(ctx context.Context, q Config) func() error {
+func (c *Collector) addTask(t task) {
+	c.tasksLock.Lock()
+	defer c.tasksLock.Unlock()
+	c.tasks = append(c.tasks, t)
+}
+
+type task struct {
+	m   *prometheus.GaugeVec
+	cfg Config
+}
+
+func (t task) run(ctx context.Context, c Quota) func() error {
 	return func() error {
-		res, err := c.qcl.GetQuota(ctx, q.ServiceCode, q.QuotaCode, quota.WithRegion(q.Region))
+		res, err := c.GetQuota(ctx, t.cfg.ServiceCode, t.cfg.QuotaCode, quota.WithRegion(t.cfg.Region))
 		if err != nil {
 			return err
 		}
-		setMetric(c.gvq, res)
+		setMetric(t.m, res)
 		return nil
 	}
 }

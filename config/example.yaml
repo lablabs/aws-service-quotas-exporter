@@ -4,15 +4,4 @@ quotas:
 metrics:
   - name: "route53_hosted_zone_records"
     help: "Number of resource sets in hosted zone"
-    command: "aws route53 list-hosted-zones"
-    list: ".HostedZones"
-    value: ".ResourceRecordSetCount"
-    labels:
-      - name: "id"
-        jqValue: ".Id"
-      - name: "name"
-        jqValue: ".Name"
-      - name: "quota"
-        value: "L-0263D0A3"
-
-//pocet EC2 instances per type
+    script: "aws route53 list-hosted-zones | jq -r \'.HostedZones[] | \"id=\\(.Id),name=\\(.Name),\\(.ResourceRecordSetCount)\"\'"

@@ -3,9 +3,8 @@ package script
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/ohler55/ojg/jp"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -16,129 +15,49 @@ type Data struct {
 	Labels map[string]string
 }
 
-func Run(ctx context.Context, cfg Config) ([]Data, error) {
+func (d Data) LabelNames() []string {
+	if d.Labels == nil {
+		return []string{}
+	}
+	r := make([]string, 0)
+	for k, _ := range d.Labels {
+		r = append(r, k)
+	}
+	return r
+}
 
-	cs := strings.Split(cfg.Command, " ")
-	prg := cs[0]
-	args := cs[1:]
-	cmd := exec.CommandContext(ctx, prg, args...)
-	var stdout, stderr bytes.Buffer
+func Run(ctx context.Context, cfg Config) ([]Data, error) {
+	cmd := exec.CommandContext(ctx, "bash", "-c", cfg.Script)
 	envs := make([]string, 0)
 	envs = append(envs, os.Environ()...)
 	envs = append(envs, cfg.FormatEnvs()...)
 	cmd.Env = envs
-	cmd.Stderr = &stderr
-	cmd.Stdout = &stdout
-	err := cmd.Run()
-	if err != nil {
-		return nil, fmt.Errorf("script error: %w, std err: %s", err, stderr.String())
-	}
-	data, err := ParseJSON(stdout.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse response from command: %v", cfg.Command)
-	}
-
-	result := make([]Data, 0)
-	if cfg.List != "" {
-		items, err := GetArray(data, cfg.List)
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse list items jq: %w", err)
-		}
-		for _, it := range items {
-			r, err := ParseRecord(it, cfg)
-			if err != nil {
-				return nil, err
-			}
-			result = append(result, r)
-		}
-		return result, nil
-	}
-	r, err := ParseRecord(data, cfg)
+	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return nil, err
 	}
-	result = append(result, r)
-	return result, nil
-}
-
-func ParseRecord(r any, c Config) (Data, error) {
-	v, err := GetFloat64(r, c.Value)
+	stdout := &bytes.Buffer{}
+	cmd.Stdout = stdout
+	err = cmd.Run()
 	if err != nil {
-		return Data{}, err
-	}
-	labels := make(map[string]string)
-	for _, l := range c.Labels {
-		if l.JqValue != "" {
-			lv, err := GetString(r, l.JqValue)
-			if err != nil {
-				return Data{}, err
-			}
-			labels[l.Name] = lv
-			continue
+		errString, err := errorString(stderr)
+		if err != nil {
+			return nil, err
 		}
-		if l.Value != "" {
-			labels[l.Name] = l.Value
-		}
+		return nil, fmt.Errorf("script error: %w, std err: %s", err, errString)
 	}
-	return Data{
-		Value:  v,
-		Labels: labels,
-	}, nil
-}
-
-func ParseJSON(data []byte) (map[string]interface{}, error) {
-	var out map[string]interface{}
-	err := json.Unmarshal(data, &out)
+	data, err := ParseStdout(stdout)
 	if err != nil {
-		return nil, fmt.Errorf("unable parse to json: %w", err)
+		return nil, fmt.Errorf("unable to parse response from command: %v", cfg.Script)
 	}
-	return out, nil
+	return data, nil
 }
 
-func GetFloat64(data any, query string) (float64, error) {
-	res, err := ParseJq(data, query)
-	if err != nil {
-		return 0, err
-	}
-	v, ok := res[0].(float64)
-	if !ok {
-		return 0, fmt.Errorf("invalid data. jq expression must return valid float64")
-	}
-	return v, nil
-}
-
-func GetString(data any, query string) (string, error) {
-	res, err := ParseJq(data, query)
+func errorString(r io.Reader) (string, error) {
+	b := strings.Builder{}
+	_, err := io.Copy(&b, r)
 	if err != nil {
 		return "", err
 	}
-	v, ok := res[0].(string)
-	if !ok {
-		return "", fmt.Errorf("invalid data. jq expression must return valid string")
-	}
-	return v, nil
-}
-
-func GetArray(data any, query string) ([]any, error) {
-	res, err := ParseJq(data, query)
-	if err != nil {
-		return nil, err
-	}
-	v, ok := res[0].([]interface{})
-	if !ok {
-		return v, fmt.Errorf("invalid data. jq expression must return valid string")
-	}
-	return v, nil
-}
-
-func ParseJq(data any, qs string) ([]any, error) {
-	q, err := jp.ParseString(qs)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse jq selector: %w", err)
-	}
-	result := q.Get(data)
-	if len(result) != 1 {
-		return nil, fmt.Errorf("empty data returned from jq expression: %s", qs)
-	}
-	return result, nil
+	return b.String(), nil
 }

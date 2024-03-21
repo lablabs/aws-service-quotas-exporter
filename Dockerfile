@@ -1,4 +1,25 @@
-FROM golang:1.22-alpine3.19 as builder
+ARG ALPINE_VERSION=3.19
+FROM python:3.10-alpine${ALPINE_VERSION} as builder_aws_cli
+
+ARG AWS_CLI_VERSION=2.15.19
+RUN apk add --no-cache git unzip groff build-base libffi-dev cmake
+RUN git clone --single-branch --depth 1 -b ${AWS_CLI_VERSION} https://github.com/aws/aws-cli.git
+
+WORKDIR aws-cli
+RUN ./configure --with-install-type=portable-exe --with-download-deps
+RUN make
+RUN make install
+
+# reduce image size: remove autocomplete and examples
+RUN rm -rf \
+    /usr/local/lib/aws-cli/aws_completer \
+    /usr/local/lib/aws-cli/awscli/data/ac.index \
+    /usr/local/lib/aws-cli/awscli/examples
+RUN find /usr/local/lib/aws-cli/awscli/data -name completions-1*.json -delete
+RUN find /usr/local/lib/aws-cli/awscli/botocore/data -name examples-1.json -delete
+RUN (cd /usr/local/lib/aws-cli; for a in *.so*; do test -f /lib/$a && rm $a; done)
+
+FROM golang:1.22-alpine${ALPINE_VERSION} as builder_golang
 
 ARG GOOS=linux
 ARG GOARCH=amd64
@@ -17,23 +38,13 @@ RUN cd cmd/exporter && \
     CGO_ENABLED=0 \
     go build -o /aws-service-quotas-exporter .
 
-FROM alpine:3.19.1 as security
+FROM alpine:${ALPINE_VERSION}
 
-RUN apk add -U --no-cache \
-    tzdata \
-    ca-certificates
+RUN apk update && apk add jq
 
-RUN addgroup -S nonroot \
-    && adduser -S nonroot -G nonroot
+COPY --from=builder_aws_cli /usr/local/lib/aws-cli/ /usr/local/lib/aws-cli/
+RUN ln -s /usr/local/lib/aws-cli/aws /usr/local/bin/aws
 
-FROM scratch
-
-COPY --from=security /usr/share/zoneinfo /usr/share/zoneinfo
-COPY --from=security /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=security /etc/passwd /etc/passwd
-COPY --from=security /etc/group /etc/group
-
-COPY --from=builder /aws-service-quotas-exporter .
+COPY --from=builder_golang /aws-service-quotas-exporter .
 
 ENTRYPOINT ["/aws-service-quotas-exporter"]
-

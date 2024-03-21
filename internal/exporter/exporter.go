@@ -10,8 +10,8 @@ import (
 )
 
 type Collector interface {
-	Register(r *prometheus.Registry) error
-	Collect(ctx context.Context, g *errgroup.Group)
+	Register(ctx context.Context, r *prometheus.Registry) error
+	Collect(ctx context.Context) error
 }
 
 const (
@@ -19,7 +19,7 @@ const (
 	defaultCollectorTimeout = time.Second * 5
 )
 
-func NewExporter(log *logrus.Logger, cls []Collector, options ...Option) (*Exporter, error) {
+func NewExporter(log *logrus.Logger, cls []Collector, r *prometheus.Registry, options ...Option) (*Exporter, error) {
 	cfg := config{
 		interval: defaultScrapeInterval,
 		timeout:  defaultCollectorTimeout,
@@ -33,6 +33,7 @@ func NewExporter(log *logrus.Logger, cls []Collector, options ...Option) (*Expor
 		log: log,
 		cfg: &cfg,
 		cls: cls,
+		r:   r,
 	}
 	return &e, nil
 }
@@ -41,10 +42,11 @@ type Exporter struct {
 	log *logrus.Logger
 	cfg *config
 	cls []Collector
+	r   *prometheus.Registry
 }
 
 func (e *Exporter) Run(ctx context.Context) error {
-	err := e.scrape(ctx)
+	err := e.register(ctx)
 	if err != nil {
 		return err
 	}
@@ -67,12 +69,27 @@ end:
 }
 
 func (e *Exporter) scrape(ctx context.Context) error {
-	e.log.Debugf("start scraping metrics %v with timeout: %v", time.Now().Format(time.RFC3339), e.cfg.timeout)
+	e.log.Debugf("scrape metrics")
 	ctx, cancel := context.WithTimeout(ctx, e.cfg.timeout)
 	defer cancel()
 	g, ctx := errgroup.WithContext(ctx)
 	for _, c := range e.cls {
-		c.Collect(ctx, g)
+		g.Go(func() error {
+			return c.Collect(ctx)
+		})
+	}
+	err := g.Wait()
+	return err
+}
+
+func (e *Exporter) register(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, e.cfg.timeout)
+	defer cancel()
+	g, ctx := errgroup.WithContext(ctx)
+	for _, c := range e.cls {
+		g.Go(func() error {
+			return c.Register(ctx, e.r)
+		})
 	}
 	err := g.Wait()
 	return err

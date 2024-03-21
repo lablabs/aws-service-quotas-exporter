@@ -24,3 +24,5 @@ go.work
 .envrc
 
 .idea
+
+coverage.out

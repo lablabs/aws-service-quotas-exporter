@@ -5,46 +5,78 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
+	"sync"
 )
 
 func NewCollector(log *logrus.Logger, cfg []Config, ns string) (*Collector, error) {
-
-	tks := make([]task, 0)
-	for _, c := range cfg {
-		m := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Namespace: ns,
-			Name:      c.Name,
-			Help:      c.Help,
-		}, c.LabelNames())
-		tks = append(tks, task{
-			m:   m,
-			cfg: c,
-		})
-	}
-
 	cl := Collector{
 		log:   log,
-		tasks: tks,
+		ns:    ns,
+		cfg:   cfg,
+		tasks: make([]task, 0),
 	}
 	return &cl, nil
 }
 
 type Collector struct {
-	log   *logrus.Logger
-	tasks []task
+	log       *logrus.Logger
+	once      sync.Once
+	err       error
+	ns        string
+	cfg       []Config
+	tasks     []task
+	tasksLock sync.Mutex
 }
 
-func (c *Collector) Register(r *prometheus.Registry) error {
-	for _, t := range c.tasks {
-		r.MustRegister(t.m)
-	}
-	return nil
+func (c *Collector) Register(ctx context.Context, r *prometheus.Registry) error {
+	c.once.Do(func() {
+		c.log.Debugf("start registering script metrics")
+		g, ctx := errgroup.WithContext(ctx)
+		for _, cf := range c.cfg {
+			g.Go(func() error {
+				data, err := Run(ctx, cf)
+				if err != nil {
+					c.log.Errorf("unable to run command: %s, %v", cf.Script, err)
+					return err
+				}
+				if len(data) > 0 {
+					lbs := data[0].LabelNames()
+					m := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+						Namespace: c.ns,
+						Name:      cf.Name,
+						Help:      cf.Help,
+					}, lbs)
+					r.MustRegister(m)
+					t := task{
+						m:   m,
+						cfg: cf,
+					}
+					c.addTask(t)
+					for _, d := range data {
+						t.m.With(d.Labels).Set(d.Value)
+					}
+				}
+				return nil
+			})
+		}
+		c.err = g.Wait()
+	})
+	return c.err
 }
 
-func (c *Collector) Collect(ctx context.Context, g *errgroup.Group) {
+func (c *Collector) Collect(ctx context.Context) error {
+	g, ctx := errgroup.WithContext(ctx)
 	for _, t := range c.tasks {
 		g.Go(t.run(ctx))
 	}
+	err := g.Wait()
+	return err
+}
+
+func (c *Collector) addTask(t task) {
+	c.tasksLock.Lock()
+	defer c.tasksLock.Unlock()
+	c.tasks = append(c.tasks, t)
 }
 
 type task struct {

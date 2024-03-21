@@ -8,5 +8,5 @@ type Log struct {
 type Config struct {
 	Address string `long:"address" description:"Http address" default:"0.0.0.0:8080"`
 	Log     Log    `group:"log" namespace:"log"`
-	Config  string `long:"config" required:"true" description:"Path to scraper scrape file"`
+	Config  string `long:"config" required:"true" description:"Path to metric scrape config file"`
 }
