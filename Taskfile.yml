@@ -1,0 +1,16 @@
+version: '3'
+
+vars:
+  APP_NAME: exporter
+
+tasks:
+  lint:
+    cmds:
+      - golangci-lint run
+  build:
+    cmds:
+      - go build -o bin/{{ .APP_NAME }} cmd/{{ .APP_NAME}}/main.go
+  run-example:
+    deps: [build]
+    cmds:
+      - ./bin/{{ .APP_NAME }} --config ./config/example.yaml
