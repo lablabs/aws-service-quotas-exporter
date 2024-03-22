@@ -2,6 +2,7 @@ version: '3'
 
 vars:
   APP_NAME: exporter
+  DOCKER_IMAGE: ghcr.io/lablabs/aws-service-quotas-exporter
 
 tasks:
   lint:
@@ -10,7 +11,18 @@ tasks:
   build:
     cmds:
       - go build -o bin/{{ .APP_NAME }} cmd/{{ .APP_NAME}}/main.go
-  run-example:
+  bin:run:
     deps: [build]
     cmds:
       - ./bin/{{ .APP_NAME }} --config ./config/example.yaml
+  test:
+    cmds:
+      - go clean -testcache
+      - go test ./... -v
+  test:cover:
+    cmds:
+      - go test -coverprofile=coverage.out ./...
+      - go tool cover -func=coverage.out
+  docker:build:
+    cmds:
+      - docker build -t {{ .DOCKER_IMAGE }} .
