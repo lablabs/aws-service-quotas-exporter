@@ -26,3 +26,5 @@ go.work
 .idea
 
 coverage.out
+
+bin/*
