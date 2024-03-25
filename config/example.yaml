@@ -2,9 +2,20 @@ scrape:
   interval: "60s"
   timeout: "5s"
 quotas:
+  # Quota for EC2/ EIPs
   - serviceCode: "ec2"
     quotaCode: "L-0263D0A3"
+  # Quota for number of records in route53 zone
+  - serviceCode: "route53"
+    quotaCode: "L-E209CC9F"
+    region: "us-east-1"
+    default: true
 metrics:
+  # Usage of ec2 elastic ips in account
+  - name: "ec2_elastic_ips_usage"
+    help: "Usage of ec2 elastic ips"
+    script: "echo \"quota_code=L-0263D0A3,$(aws ec2 describe-addresses --query \'length(Addresses[])\')\""
+  # Number of records in route53 zone
   - name: "route53_hosted_zone_records"
     help: "Number of resource sets in hosted zone"
     script: "aws route53 list-hosted-zones | jq -r \'.HostedZones[] | \"id=\\(.Id),name=\\(.Name),private=\\(.Config.PrivateZone),\\(.ResourceRecordSetCount)\"\'"

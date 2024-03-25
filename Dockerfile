@@ -40,7 +40,7 @@ RUN cd cmd/exporter && \
 
 FROM alpine:${ALPINE_VERSION}
 
-RUN apk update && apk add jq
+RUN apk update && apk add jq bash
 
 COPY --from=builder_aws_cli /usr/local/lib/aws-cli/ /usr/local/lib/aws-cli/
 RUN ln -s /usr/local/lib/aws-cli/aws /usr/local/bin/aws

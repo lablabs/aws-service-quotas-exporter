@@ -8,6 +8,7 @@ type Config struct {
 	ServiceCode string `json:"serviceCode,omitempty" yaml:"serviceCode,omitempty"`
 	QuotaCode   string `json:"quotaCode,omitempty" yaml:"quotaCode,omitempty"`
 	Region      string `json:"region,omitempty" yaml:"region,omitempty"`
+	Default     bool   `json:"default,omitempty" yaml:"default,omitempty"`
 }
 
 func (c Config) Validate() error {
