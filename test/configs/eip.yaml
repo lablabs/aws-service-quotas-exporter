@@ -4,4 +4,4 @@ quotas:
 metrics:
   - name: "route53_hosted_zone_records"
     help: "Number of resource sets in hosted zone"
-    script: "aws route53 list-hosted-zones | jq -r '.HostedZones[] | \"id=\(.Id),name=\(.Name),\(.ResourceRecordSetCount)\"'"
+    script: "aws route53 list-hosted-zones | jq -r \'.HostedZones[] | \"id=\\(.Id),name=\\(.Name),private=\\(.Config.PrivateZone),\\(.ResourceRecordSetCount)\"\'"
