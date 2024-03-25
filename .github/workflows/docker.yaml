@@ -1,18 +1,14 @@
 name: Build and publish Docker images
 
-#on:
-#  push:
-#    branches:
-#      - main
-#      - master
-#    tags:
-#      - 'v*'
-#  release:
-#    types: [published]
-
 on:
-  pull_request:
   push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+
 
 jobs:
   latest:
