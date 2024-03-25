@@ -1,13 +1,13 @@
 name: Release Charts
 
-on:
-  push:
-    branches:
-      - main
-
 #on:
 #  push:
-#  pull_request:
+#    branches:
+#      - main
+
+on:
+  push:
+  pull_request:
 
 env:
   HELM_VERSION: 3.14.0
@@ -36,6 +36,7 @@ jobs:
           version: ${{ env.HELM_VERSION }}
 
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.6.0
+        uses: helm/chart-releaser-action@v1.6.1
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_SKIP_EXISTING: true
