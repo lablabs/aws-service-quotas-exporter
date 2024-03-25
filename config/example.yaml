@@ -1,3 +1,6 @@
+scrape:
+  interval: "60s"
+  timeout: "5s"
 quotas:
   # Quota for EC2/ EIPs
   - serviceCode: "ec2"
@@ -15,4 +18,4 @@ metrics:
   # Number of records in route53 zone
   - name: "route53_hosted_zone_records"
     help: "Number of resource sets in hosted zone"
-    script: "aws route53 list-hosted-zones | jq -r \'.HostedZones[] | \"id=\\(.Id),name=\\(.Name),\\(.ResourceRecordSetCount)\"\'"
+    script: "aws route53 list-hosted-zones | jq -r \'.HostedZones[] | \"id=\\(.Id),name=\\(.Name),private=\\(.Config.PrivateZone),\\(.ResourceRecordSetCount)\"\'"

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-//go:embed configs/eip.yaml
+//go:embed configs/zone.yaml
 var configEip string
 
 func TmpConfigMetricFile(t *testing.T) string {
