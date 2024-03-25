@@ -1,13 +1,9 @@
 name: Release Charts
 
-#on:
-#  push:
-#    branches:
-#      - main
-
 on:
   push:
-  pull_request:
+    branches:
+      - main
 
 env:
   HELM_VERSION: 3.14.0
