@@ -1,6 +1,10 @@
 name: Lint and Test Charts
 
-on: pull_request
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
 
 env:
   HELM_VERSION: 3.14.0
