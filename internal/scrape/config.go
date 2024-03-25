@@ -8,13 +8,23 @@ import (
 	"time"
 )
 
-type Global struct {
+type Scrape struct {
 	Interval time.Duration `json:"interval,omitempty" yaml:"interval,omitempty"`
 	Timeout  time.Duration `json:"timeout,omitempty" yaml:"timeout,omitempty"`
 }
 
+func (s *Scrape) Validate() error {
+	if s.Interval != 0 && s.Interval < time.Minute {
+		return fmt.Errorf("scrape.interval is not valid. Minimal value is 60s")
+	}
+	if s.Timeout != 0 && s.Timeout < (time.Second*5) {
+		return fmt.Errorf("scrape.timeout is not valid. Minimal value is 5s")
+	}
+	return nil
+}
+
 type Config struct {
-	Global  Global          `json:"global,omitempty" yaml:"global,omitempty"`
+	Scrape  Scrape          `json:"scrape,omitempty" yaml:"scrape,omitempty"`
 	Quotas  []quotas.Config `json:"quotas,omitempty" yaml:"quotas,omitempty"`
 	Metrics []script.Config `json:"metrics,omitempty" yaml:"metrics,omitempty"`
 }
@@ -30,7 +40,7 @@ func (c *Config) Validate() error {
 			return err
 		}
 	}
-	return nil
+	return c.Scrape.Validate()
 }
 
 func LoadAndValidateConfig(path string) (*Config, error) {

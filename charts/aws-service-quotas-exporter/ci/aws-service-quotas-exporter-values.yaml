@@ -1,18 +1,10 @@
-exporter:
-  config:
-    quotas:
-      - serviceCode: "ec2"
-        quotaCode: "L-0263D0A3"
-    metrics:
-      - name: "route53_hosted_zone_records"
-        help: "Number of resource sets in hosted zone"
-        command: "aws route53 list-hosted-zones"
-        list: ".HostedZones"
-        value: ".ResourceRecordSetCount"
-        labels:
-          - name: "id"
-            jqValue: ".Id"
-          - name: "name"
-            jqValue: ".Name"
-          - name: "quota"
-            value: "L-0263D0A3"
+scrape:
+  interval: "60s"
+  timeout: "5s"
+quotas:
+  - serviceCode: "ec2"
+    quotaCode: "L-0263D0A3"
+metrics:
+  - name: "route53_hosted_zone_records"
+    help: "Number of resource sets in hosted zone"
+    script: "aws route53 list-hosted-zones | jq -r \'.HostedZones[] | \"id=\\(.Id),name=\\(.Name),private=\\(.Config.PrivateZone),\\(.ResourceRecordSetCount)\"\'"

@@ -45,6 +45,8 @@ service:
 
 
 env:
+#  - name: "AWS_REGION"
+#    value: "eu-central-1"
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -118,3 +120,6 @@ exporter:
     level: "DEBUG"
     format: "json"
   config:
+#    scrape:
+#    quotas: []
+#    metrics: []

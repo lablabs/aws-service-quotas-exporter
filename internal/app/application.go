@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	PrometheusNamespace = "quota_exporter"
+	PrometheusNamespace = "aws_quota_exporter"
 )
 
 func NewApplication(log *logrus.Logger, cfg Config) (*Application, error) {
@@ -84,7 +84,7 @@ func (a *Application) Run(ctx context.Context) error {
 
 func exporterOptions(cfg *scrape.Config) []exporter.Option {
 	return []exporter.Option{
-		exporter.WithInterval(cfg.Global.Interval),
-		exporter.WithTimeout(cfg.Global.Timeout),
+		exporter.WithInterval(cfg.Scrape.Interval),
+		exporter.WithTimeout(cfg.Scrape.Timeout),
 	}
 }
