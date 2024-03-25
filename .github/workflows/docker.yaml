@@ -70,7 +70,7 @@ jobs:
         run: echo ${{ steps.docker_build.outputs.digest }}
   tag:
     runs-on: ubuntu-22.04
-    if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
