@@ -19,17 +19,7 @@ repos:
       - id: helm-docs
         args:
           - --chart-search-root=charts
-#  - repo: https://github.com/gruntwork-io/pre-commit
-#    rev: v0.1.17
-#    hooks:
-#      - id: helmlint
-#
-#  - repo: https://github.com/norwoodj/helm-docs
-#    rev: v1.13.0
-#    hooks:
-#      - id: helm-docs
-#        args:
-#          - --chart-search-root=charts
-#      - id: helm-docs-built
-#        args:
-#          - --chart-search-root=charts
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.17
+    hooks:
+      - id: helmlint

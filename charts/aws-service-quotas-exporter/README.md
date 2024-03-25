@@ -19,7 +19,7 @@ helm install aws-service-quotas-exporter/aws-service-quotas-exporter
 | exporter.address | string | `"0.0.0.0:8080"` | Address of http endpoint |
 | exporter.config.metrics | list | `[]` | Metrics config, example [config/example.yaml](../../config/example.yaml) |
 | exporter.config.quotas | list | `[]` | Quotas config, example [config/example.yaml](../../config/example.yaml) |
-| exporter.config.scrape | string | `nil` |  |
+| exporter.config.scrape | string | `nil` | Base configuration for scraping, example [config/example.yaml](../../config/example.yaml) |
 | exporter.log.format | string | `"json"` | Log format, default json |
 | exporter.log.level | string | `"DEBUG"` | Log level for exporter |
 | fullnameOverride | string | `""` | full name override |
@@ -36,7 +36,7 @@ helm install aws-service-quotas-exporter/aws-service-quotas-exporter
 | podSecurityContext | object | `{}` |  |
 | readinessProbe.httpGet.path | string | `"/"` |  |
 | readinessProbe.httpGet.port | string | `"http"` |  |
-| replicaCount | int | `1` | number of replicca |
+| replicaCount | int | `1` | number of replicas |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
 | service.port | int | `8080` |  |
