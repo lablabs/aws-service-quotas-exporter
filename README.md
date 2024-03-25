@@ -104,6 +104,16 @@ Access help:
 docker run --rm -p 8080:8080 -i ghcr.io/lablabs/aws-service-quotas-exporter:latest --help
 ```
 
+## Helm chart repository
+To deploy the exporter into Kubernetes, we recommend using our manager Helm repository:
+
+```bash
+helm repo add cloudflare-exporter https://lablabs.github.io/aws-service-quotas-exporter/
+helm install aws-service-quotas-exporter/aws-service-quotas-exporter
+```
+
+for helm chart configuration / development, follow [./charts/aws-service-quotas-exporter](./charts/aws-service-quotas-exporter)
+
 ## Contributing and reporting issues
 Feel free to create an issue in this repository if you have questions, suggestions or feature requests.
 

@@ -1,31 +1,36 @@
-# Default values for aws-service-quotas-exporter.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
 
+# -- number of replicca
 replicaCount: 1
 
 image:
+  # -- image repository path
   repository: ghcr.io/lablabs/aws-service-quotas-exporter
+  # -- pull Policy
   pullPolicy: Always
-  # Overrides the image tag whose default is the chart appVersion.
+  # --Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
+# -- image pull Secrets
 imagePullSecrets: []
+# -- helm name override
 nameOverride: ""
+# -- full name override
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Specifies whether a service account should be created
   create: true
-  # Automatically mount a ServiceAccount's API credentials?
+  # -- Automatically mount a ServiceAccount's API credentials?
   automount: true
-  # Annotations to add to the service account
+  # -- Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
+  # -- The name of the service account to use.
+  # --If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# -- pod annotations
 podAnnotations: {}
+# -- pod labels
 podLabels: {}
 
 podSecurityContext: {}
@@ -43,7 +48,7 @@ service:
   type: ClusterIP
   port: 8080
 
-
+# -- Pod env section to configure
 env:
 #  - name: "AWS_REGION"
 #    value: "eu-central-1"
@@ -96,30 +101,35 @@ tolerations: []
 affinity: {}
 
 serviceMonitor:
-  # When set true then use a ServiceMonitor to configure scraping
+  # -- When set true then use a ServiceMonitor to configure scraping
   enabled: false
-  # Set the namespace the ServiceMonitor should be deployed, if empty namespace will be .Release.Namespace
+  # -- Set the namespace the ServiceMonitor should be deployed, if empty namespace will be .Release.Namespace
   namespace: ""
-  # Service monitor labels
+  # -- Service monitor labels
   labels: {}
-  # Set how frequently Prometheus should scrape
+  # -- Set how frequently Prometheus should scrape
   interval: 30s
-  # Set path to redis-exporter telemtery-path
+  # -- Set path to exporter telemtery-path
   telemetryPath: /metrics
-  # Set timeout for scrape
+  # -- Set timeout for scrape
   timeout: 10s
-  # Set relabel_configs as per https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+  # -- Set relabel_configs as per https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
   relabelings: []
-  # Set of labels to transfer on the Kubernetes Service onto the target.
+  # -- Set of labels to transfer on the Kubernetes Service onto the target.
   targetLabels: []
   metricRelabelings: []
 
 exporter:
+  # -- Address of http endpoint
   address: "0.0.0.0:8080"
   log:
+    # -- Log level for exporter
     level: "DEBUG"
+    # -- Log format, default json
     format: "json"
   config:
-#    scrape:
-#    quotas: []
-#    metrics: []
+    scrape:
+    # -- Quotas config, example [config/example.yaml](../../config/example.yaml)
+    quotas: []
+    # -- Metrics config, example [config/example.yaml](../../config/example.yaml)
+    metrics: []
