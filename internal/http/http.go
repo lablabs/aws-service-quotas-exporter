@@ -28,6 +28,7 @@ func NewHTTP(log *logrus.Logger, address string, registry *prometheus.Registry) 
 		s:   &s,
 	}
 	RegisterMetricEndpoint(handler, registry)
+	RegisterStatusEndpoint(handler, &h)
 	return &h, nil
 }
 
@@ -61,8 +62,17 @@ func (h *HTTP) Run(ctx context.Context) error {
 	return nil
 }
 
+func (h *HTTP) Status(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
 func RegisterMetricEndpoint(mux *http.ServeMux, registry *prometheus.Registry) {
 	registry.MustRegister(collectors.NewGoCollector())
 	registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	mux.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{Registry: registry}))
+}
+
+func RegisterStatusEndpoint(mux *http.ServeMux, h *HTTP) {
+	mux.HandleFunc("/liveness", h.Status)
+	mux.HandleFunc("/readiness", h.Status)
 }

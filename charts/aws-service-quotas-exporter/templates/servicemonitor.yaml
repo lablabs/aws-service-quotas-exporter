@@ -17,8 +17,8 @@ spec:
 {{- if .Values.serviceMonitor.interval }}
       interval: {{ .Values.serviceMonitor.interval }}
 {{- end }}
-{{- if .Values.serviceMonitor.telemetryPath }}
-      path: {{ .Values.serviceMonitor.telemetryPath }}
+{{- if .Values.serviceMonitor.path }}
+      path: {{ .Values.serviceMonitor.path }}
 {{- end }}
 {{- if .Values.serviceMonitor.timeout }}
       scrapeTimeout: {{ .Values.serviceMonitor.timeout }}
@@ -34,7 +34,7 @@ spec:
   jobLabel: {{ template "aws-service-quotas-exporter.fullname" . }}
   namespaceSelector:
     matchNames:
-      - {{ .Release.Namespace }}
+      - {{ .Values.serviceMonitor.namespace | default .Release.Namespace }}
   selector:
     matchLabels:
       {{- include "aws-service-quotas-exporter.selectorLabels" . | nindent 6 }}
