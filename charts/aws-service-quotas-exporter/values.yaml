@@ -36,7 +36,8 @@ securityContext:
    runAsNonRoot: true
    runAsUser: 1000
    capabilities:
-     add: ["NET_ADMIN", "NET_RAW"]
+     drop:
+       - ALL
 
 service:
   type: ClusterIP
