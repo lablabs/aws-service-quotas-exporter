@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -31,7 +32,7 @@ func (m *Manager) StartAndWait(ctx context.Context) error {
 		service := s
 		group.Go(func() error {
 			err := service.Run(ctx)
-			if err != nil {
+			if err != nil && !errors.Is(err, context.Canceled) {
 				return err
 			}
 			<-ctx.Done()

@@ -31,13 +31,13 @@ podLabels: {}
 podSecurityContext: {}
   # fsGroup: 2000
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+securityContext:
+   readOnlyRootFilesystem: true
+   runAsNonRoot: true
+   runAsUser: 1000
+   capabilities:
+     drop:
+       - ALL
 
 service:
   type: ClusterIP
@@ -48,33 +48,24 @@ env:
 #  - name: "AWS_REGION"
 #    value: "eu-central-1"
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+resources:
+  # This was measured for 5 quotas and 5 metrics script
+   requests:
+     cpu: 400m
+     memory: 200Mi
   # limits:
   #   cpu: 100m
   #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+
 
 livenessProbe:
   httpGet:
-    path: /
+    path: /liveness
     port: http
 readinessProbe:
   httpGet:
-    path: /
+    path: /readiness
     port: http
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
 volumes: []
@@ -104,8 +95,8 @@ serviceMonitor:
   labels: {}
   # Set how frequently Prometheus should scrape
   interval: 30s
-  # Set path to redis-exporter telemtery-path
-  telemetryPath: /metrics
+  # Set path to metrics endpoint
+  path: /metrics
   # Set timeout for scrape
   timeout: 10s
   # Set relabel_configs as per https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
@@ -119,7 +110,7 @@ exporter:
   log:
     level: "DEBUG"
     format: "json"
-  config:
+  config: {}
 #    scrape:
 #    quotas: []
 #    metrics: []
