@@ -1,0 +1,28 @@
+name: Go tests
+
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: '1.22.0'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Get dependencies
+        run: |
+          go get -v -t -d ./...
+      - name: Test
+        env:
+          GOPROXY: "https://proxy.golang.org"
+        run: go test -v ./...

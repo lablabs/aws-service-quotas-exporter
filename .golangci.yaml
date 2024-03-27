@@ -1,0 +1,14 @@
+linters:
+  enable:
+    - megacheck
+    - gofmt
+    - govet
+    - revive
+
+linters-settings:
+  staticcheck:
+    checks:
+      - '-SA5008'
+  gofmt:
+    # simplify code: gofmt with `-s` option, true by default
+    simplify: true
