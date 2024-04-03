@@ -56,7 +56,7 @@ func (c *Collector) Register(ctx context.Context, r *prometheus.Registry) error 
 		for _, cf := range c.cfg {
 			qc := cf
 			g.Go(func() error {
-				res, err := c.qcl.GetQuota(ctx, qc.ServiceCode, qc.QuotaCode, quota.WithRegion(qc.Region))
+				res, err := c.qcl.GetQuota(ctx, qc.ServiceCode, qc.QuotaCode, quota.WithDefault(qc.Default), quota.WithRegion(qc.Region))
 				if err != nil {
 					return err
 				}
@@ -97,7 +97,7 @@ type task struct {
 
 func (t task) run(ctx context.Context, c Quota) func() error {
 	return func() error {
-		res, err := c.GetQuota(ctx, t.cfg.ServiceCode, t.cfg.QuotaCode, quota.WithRegion(t.cfg.Region))
+		res, err := c.GetQuota(ctx, t.cfg.ServiceCode, t.cfg.QuotaCode, quota.WithDefault(t.cfg.Default), quota.WithRegion(t.cfg.Region))
 		if err != nil {
 			return err
 		}
