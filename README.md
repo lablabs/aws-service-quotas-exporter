@@ -37,7 +37,7 @@ quotas:
     default: true
 ```
 
-### Usage of AwS resources exports via bash scraping
+### Usage of AWS resources exports via bash scraping
 
 The pity of AWS service-quota API is that, for most of the resources there is no easy way how to show actual usage of concrete
 AWS resources. You have to do it via aws cli/sdk. This exporter try to solve this issue via simple bash script scheduler which
@@ -68,7 +68,7 @@ Example above will produce following prometheus metric export:
 quota_exporter_ec2_elastic_ips_usage{quota_code="L-0263D0A3"} 4
 ```
 
-There is requirement regarding format output. If you want to export data. For every unique
+There is requirement regarding format output. For every unique
 combination of labels, it has to be one line stdout of your bash script in following csv format
 
 `lable_name_a=label_value,label_name_b=label_value_b,label_name_c=label_value_c,value_for_metric`
