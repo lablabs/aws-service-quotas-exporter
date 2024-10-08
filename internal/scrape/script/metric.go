@@ -3,7 +3,6 @@ package script
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,10 +10,10 @@ import (
 
 const metricRegex = `,`
 
-func ParseStdout(r io.Reader) ([]Data, error) {
+func ParseStdout(r []string) ([]Data, error) {
 	out := make([]Data, 0)
 	pr := NewParser()
-	scanner := bufio.NewScanner(r)
+	scanner := bufio.NewScanner(strings.NewReader(strings.Join(r, "\n")))
 	for scanner.Scan() {
 		mt, err := pr.ParseMetric(scanner.Text())
 		if err != nil {

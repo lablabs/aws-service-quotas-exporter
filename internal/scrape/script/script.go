@@ -1,13 +1,10 @@
 package script
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
+	"github.com/go-cmd/cmd"
 	"os"
-	"os/exec"
-	"strings"
 )
 
 type Data struct {
@@ -27,37 +24,25 @@ func (d Data) LabelNames() []string {
 }
 
 func Run(ctx context.Context, cfg Config) ([]Data, error) {
-	cmd := exec.CommandContext(ctx, "bash", "-c", cfg.Script)
-	envs := make([]string, 0)
-	envs = append(envs, os.Environ()...)
-	envs = append(envs, cfg.FormatEnvs()...)
-	cmd.Env = envs
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return nil, err
-	}
-	stdout := &bytes.Buffer{}
-	cmd.Stdout = stdout
-	err = cmd.Run()
-	if err != nil {
-		errString, err := errorString(stderr)
+	c := cmd.NewCmd("bash", "-c", cfg.Script)
+	c.Env = append(c.Env, os.Environ()...)
+	c.Env = append(c.Env, cfg.FormatEnvs()...)
+
+	<-c.Start()
+	select {
+	case <-ctx.Done():
+		err := c.Stop()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("script error: %w, std err: %s", err, c.Status().Stderr)
 		}
-		return nil, fmt.Errorf("script error: %w, std err: %s", err, errString)
 	}
-	data, err := ParseStdout(stdout)
+	err := c.Status().Error
+	if err != nil {
+		return nil, fmt.Errorf("script error: %w, std err: %s", err, c.Status().Stderr)
+	}
+	data, err := ParseStdout(c.Status().Stdout)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse response from command: %v", cfg.Script)
 	}
 	return data, nil
-}
-
-func errorString(r io.Reader) (string, error) {
-	b := strings.Builder{}
-	_, err := io.Copy(&b, r)
-	if err != nil {
-		return "", err
-	}
-	return b.String(), nil
 }
