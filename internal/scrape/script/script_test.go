@@ -50,7 +50,7 @@ func TestRun(t *testing.T) {
 			defer cancelCtx()
 			got, err := script.Run(ctx, tt.args)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Run() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Run() got = %v, error = %v, wantErr %v", got, err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
