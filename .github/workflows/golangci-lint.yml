@@ -1,9 +1,19 @@
 name: Golang lint
+
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
+
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
 
 jobs:
   golangci:

@@ -5,12 +5,12 @@ on:
     branches:
       - main
 
-#on:
-#  push:
-#  pull_request:
-
 env:
   HELM_VERSION: 3.14.0
+
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
 
 jobs:
   release:
