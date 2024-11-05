@@ -1,4 +1,4 @@
-name: Go tests
+name: Unit test
 
 on:
   push:
@@ -19,9 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  go:
     runs-on: ubuntu-22.04
-
     steps:
       - uses: actions/checkout@v4
       - name: Setup Go
