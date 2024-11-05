@@ -1,12 +1,12 @@
+{{- if .Values.exporter.config }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-cfg" (include "aws-service-quotas-exporter.fullname" .) }}
+  name: {{ include "aws-service-quotas-exporter.configMapName" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "aws-service-quotas-exporter.labels" . | nindent 4 }}
 data:
-  {{- if .Values.exporter.config }}
   scrape.yaml: |
     {{- toYaml .Values.exporter.config  | nindent 4 }}
-  {{- end }}
+{{- end }}

@@ -11,10 +11,11 @@ spec:
       {{- include "aws-service-quotas-exporter.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       labels:
         {{- include "aws-service-quotas-exporter.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
@@ -53,16 +54,20 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - name: scrape-cfg
+            {{- if .Values.exporter.config }}
+            - name: config
               mountPath: /etc/exporter
               readOnly: true
+            {{- end }}
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
-        - name: scrape-cfg
+        {{- if .Values.exporter.config }}
+        - name: config
           configMap:
-            name: {{ printf "%s-cfg" (include "aws-service-quotas-exporter.fullname" .) }}
+            name: {{ include "aws-service-quotas-exporter.configMapName" . }}
+        {{- end }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

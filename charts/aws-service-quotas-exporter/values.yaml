@@ -1,6 +1,8 @@
 # Default values for aws-service-quotas-exporter.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+nameOverride: ""
+fullnameOverride: ""
 
 replicaCount: 1
 
@@ -11,8 +13,6 @@ image:
   tag: ""
 
 imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -32,9 +32,7 @@ podSecurityContext: {}
   # fsGroup: 2000
 
 securityContext:
-   readOnlyRootFilesystem: true
    runAsNonRoot: true
-   runAsUser: 1000
    capabilities:
      drop:
        - ALL
@@ -42,7 +40,6 @@ securityContext:
 service:
   type: ClusterIP
   port: 8080
-
 
 env:
 #  - name: "AWS_REGION"
@@ -57,11 +54,11 @@ resources:
   #   cpu: 100m
   #   memory: 128Mi
 
-
 livenessProbe:
   httpGet:
     path: /liveness
     port: http
+
 readinessProbe:
   httpGet:
     path: /readiness
@@ -101,16 +98,17 @@ serviceMonitor:
   timeout: 10s
   # Set relabel_configs as per https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
   relabelings: []
+  # Set metric_relabel_configs per https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs
+  metricRelabelings: []
   # Set of labels to transfer on the Kubernetes Service onto the target.
   targetLabels: []
-  metricRelabelings: []
 
 exporter:
   address: "0.0.0.0:8080"
   log:
-    level: "DEBUG"
+    level: "INFO"
     format: "json"
   config: {}
-#    scrape:
-#    quotas: []
-#    metrics: []
+    # scrape:
+    # quotas: []
+    # metrics: []
