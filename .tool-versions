@@ -3,3 +3,4 @@ awscli 2.7.14
 pre-commit 2.20.0
 task 3.35.1
 golang 1.22.0
+golintci-lint 1.61.0

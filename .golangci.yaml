@@ -1,4 +1,5 @@
 linters:
+  disable-all: true
   enable:
     - megacheck
     - gofmt

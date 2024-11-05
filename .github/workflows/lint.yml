@@ -19,8 +19,12 @@ jobs:
   golangci:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          version: v1.57.1
+          fetch-depth: 0
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.61.0
