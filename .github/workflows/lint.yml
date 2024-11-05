@@ -12,12 +12,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.head_ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   golangci:
-    name: Golang CI linter
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
