@@ -19,8 +19,6 @@ concurrency:
 
 jobs:
   helm:
-    # depending on default permission settings for your org (contents being read-only or read-write for workloads), you will have to add permissions
-    # see: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
@@ -42,6 +40,7 @@ jobs:
         uses: helm/chart-releaser-action@v1.6.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          CR_SKIP_EXISTING: true
 
   binary:
     runs-on: ubuntu-22.04
@@ -76,7 +75,6 @@ jobs:
 
   image:
     runs-on: ubuntu-22.04
-    if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
