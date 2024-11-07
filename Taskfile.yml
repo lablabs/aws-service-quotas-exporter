@@ -2,8 +2,7 @@ version: '3'
 
 vars:
   APP_NAME: exporter
-#  DOCKER_IMAGE: ghcr.io/lablabs/aws-service-quotas-exporter
-  DOCKER_IMAGE: 533837855032.dkr.ecr.eu-central-1.amazonaws.com/aws-service-quotas-exporter:0.0.2-rc1
+  DOCKER_IMAGE: ghcr.io/lablabs/aws-service-quotas-exporter
 
 tasks:
   lint:
