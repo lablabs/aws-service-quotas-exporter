@@ -40,11 +40,16 @@ RUN cd cmd/exporter && \
 
 FROM alpine:${ALPINE_VERSION}
 
-RUN apk update && apk add jq bash
+RUN apk --no-cache add jq bash
 
 COPY --from=builder_aws_cli /usr/local/lib/aws-cli/ /usr/local/lib/aws-cli/
 RUN ln -s /usr/local/lib/aws-cli/aws /usr/local/bin/aws
 
 COPY --from=builder_golang /aws-service-quotas-exporter .
+
+RUN addgroup -S -g 1001 exporter && \
+    adduser -S -u 1001 -G exporter exporter
+
+USER 1001:1001
 
 ENTRYPOINT ["/aws-service-quotas-exporter"]

@@ -26,3 +26,6 @@ tasks:
   docker:build:
     cmds:
       - docker build -t {{ .DOCKER_IMAGE }} .
+  docker:run:
+    cmds:
+      - docker run --rm --publish 8080:8080 --volume ./config/example.yaml:/config/example.yaml {{ .DOCKER_IMAGE }} --config /config/example.yaml

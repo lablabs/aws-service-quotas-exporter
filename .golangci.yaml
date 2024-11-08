@@ -1,9 +1,12 @@
 linters:
+  disable-all: true
   enable:
-    - megacheck
+    - gosimple
+    - staticcheck
     - gofmt
     - govet
     - revive
+    - unused
 
 linters-settings:
   staticcheck:

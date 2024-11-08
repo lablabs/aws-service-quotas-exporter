@@ -6,6 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.26.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.4
 	github.com/aws/aws-sdk-go-v2/service/servicequotas v1.21.1
+	github.com/go-cmd/cmd v1.4.3
 	github.com/itchyny/gojq v0.12.14
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/prometheus/client_golang v1.18.0
