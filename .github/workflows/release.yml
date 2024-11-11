@@ -1,14 +1,14 @@
-name: Release Charts
+name: Release
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main
-  release:
-    types: [published]
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
+  packages: write
 
 env:
   HELM_VERSION: 3.14.0
@@ -36,11 +36,14 @@ jobs:
         with:
           version: ${{ env.HELM_VERSION }}
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.6.0
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_SKIP_EXISTING: true
+      - name: Publish Helm chart
+        uses: bsord/helm-push@v4
+        with:
+          useOCIRegistry: true
+          registry-url: oci://ghcr.io/${{ github.repository }}
+          username: ${{ github.repository_owner }}
+          access-token: ${{ secrets.GITHUB_TOKEN }}
+          chart-folder: charts/aws-service-quotas-exporter
 
   binary:
     runs-on: ubuntu-22.04
@@ -54,22 +57,11 @@ jobs:
         uses: actions/setup-go@v5
 
       - name: Run GoReleaser
-        if: startsWith(github.ref, 'refs/tags/')
         uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
           version: latest
           args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run GoReleaser snapshot
-        if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
-        uses: goreleaser/goreleaser-action@v5
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -93,39 +85,17 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker meta for latest
-        if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/lablabs/aws-service-quotas-exporter
-          tags: |
-            type=raw,value=latest
-
-      - name: Build image and push to GitHub Container Registry
-        if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          push: true
-
       - name: Docker meta for tag
-        if: startsWith(github.ref, 'refs/tags/')
         id: meta-tag
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ghcr.io/lablabs/aws-service-quotas-exporter
+          images: ghcr.io/lablabs/aws-service-quotas-exporter
+          flavor: |
+            latest=true
           tags: |
-            type=raw,value=${{ github.ref_name }}
+            type=ref,event=tag
 
       - name: Build image and push to GitHub Container Registry
-        if: startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v5
         with:
           context: .
