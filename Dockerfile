@@ -1,4 +1,4 @@
-ARG ALPINE_VERSION=3.19
+ARG ALPINE_VERSION=3.20
 FROM python:3.10-alpine${ALPINE_VERSION} as builder_aws_cli
 
 ARG AWS_CLI_VERSION=2.15.19
@@ -21,9 +21,6 @@ RUN (cd /usr/local/lib/aws-cli; for a in *.so*; do test -f /lib/$a && rm $a; don
 
 FROM golang:1.22-alpine${ALPINE_VERSION} as builder_golang
 
-ARG GOOS=linux
-ARG GOARCH=amd64
-
 RUN apk --update add ca-certificates
 
 WORKDIR $GOPATH/src/github.com/lablabs/aws-service-quotas-exporter
@@ -34,7 +31,7 @@ RUN go mod vendor
 RUN go mod verify
 
 RUN cd cmd/exporter && \
-    GOOS=$GOOS GOARCH=$GOARCH \
+    GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
     CGO_ENABLED=0 \
     go build -o /aws-service-quotas-exporter .
 
