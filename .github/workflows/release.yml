@@ -96,13 +96,16 @@ jobs:
             type=ref,event=tag
 
       - name: Build image and push to GitHub Container Registry
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta-tag.outputs.tags }}
           labels: ${{ steps.meta-tag.outputs.labels }}
+          annotations: ${{ steps.meta-tag.outputs.annotations }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
 
       - name: Image digest
