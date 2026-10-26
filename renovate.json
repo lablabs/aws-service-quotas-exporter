@@ -1,0 +1,18 @@
+{
+  "labels": [
+    "dependencies"
+  ],
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "vulnerabilityAlerts": {
+    "addLabels": [
+      "security"
+    ]
+  },
+  "enabledManagers": [
+    "asdf",
+    "gomod",
+    "dockerfile",
+    "github-actions"
+  ]
+}
