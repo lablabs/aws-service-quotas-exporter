@@ -4,6 +4,16 @@
   ],
   "minimumReleaseAge": "7 days",
   "internalChecksFilter": "strict",
+  "packageRules": [
+    {
+      "description": "No cooldown for lablabs-owned packages",
+      "matchPackageNames": [
+        "lablabs/**",
+        "ghcr.io/lablabs/**"
+      ],
+      "minimumReleaseAge": "0 days"
+    }
+  ],
   "vulnerabilityAlerts": {
     "addLabels": [
       "security"
